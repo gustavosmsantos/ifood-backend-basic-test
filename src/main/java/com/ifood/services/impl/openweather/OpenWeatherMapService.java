@@ -1,7 +1,5 @@
 package com.ifood.services.impl.openweather;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.ifood.enums.temperature.TemperatureUnitsEnum;
 import com.ifood.model.Details;
 import com.ifood.model.WeatherInfo;
@@ -10,11 +8,9 @@ import com.ifood.services.impl.openweather.response.Main;
 import com.ifood.services.impl.openweather.response.OpenWeatherResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.HttpMessageConverter;
-import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
@@ -22,8 +18,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.Collections;
-import java.util.List;
 
 import static com.ifood.services.impl.openweather.UnitsRetriever.getUnits;
 
@@ -41,6 +35,9 @@ public class OpenWeatherMapService implements WeatherService {
     @Value("${weather.language}")
     private String lang;
 
+    @Autowired
+    private RestTemplate restTemplate;
+
     public WeatherInfo retrieveWeatherForCity(String city, TemperatureUnitsEnum temperatureUnits) {
 
         UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(url)
@@ -50,13 +47,6 @@ public class OpenWeatherMapService implements WeatherService {
                 .queryParam("units", getUnits(temperatureUnits));
 
         LOGGER.info("Calling the endpoint \"{}\", for city \"{}\"", url, city);
-
-        ObjectMapper mapper = Jackson2ObjectMapperBuilder.json()
-                .modules(new JavaTimeModule())
-                .build();
-
-        List<HttpMessageConverter<?>> converters = Collections.singletonList(new MappingJackson2HttpMessageConverter(mapper));
-        RestTemplate restTemplate = new RestTemplate(converters);
 
         try {
             ResponseEntity<OpenWeatherResponse> entity = restTemplate.getForEntity(uriBuilder.build(false).toUriString(), OpenWeatherResponse.class);
