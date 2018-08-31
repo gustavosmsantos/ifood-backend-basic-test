@@ -6,42 +6,48 @@ import com.ifood.model.Details;
 import com.ifood.model.Weather;
 import com.ifood.model.WeatherInfo;
 import com.ifood.services.impl.openweather.OpenWeatherMapService;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.autoconfigure.web.client.RestClientTest;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.client.MockRestServiceServer;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.time.LocalDateTime;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
 @RunWith(SpringRunner.class)
-@RestClientTest(OpenWeatherMapService.class)
+@SpringBootTest
 public class OpenWeatherMapServiceTest {
 
     @Autowired
     private OpenWeatherMapService service;
 
     @Autowired
+    private RestTemplateBuilder restTemplateBuilder;
+
     private MockRestServiceServer server;
 
     @Value("classpath:weather-response-example.json")
     private Resource responseExample;
+
+    @Before
+    public void setup() {
+        this.server = MockRestServiceServer.bindTo(service.getRestTemplate()).build();
+    }
 
     private static final String url = "http://api.openweathermap.org/data/2.5/weather?q=S%C3%A3o%20Paulo&appid=8199304b927600d08c479986ff37d5b4&lang=en&units=metric";
 
@@ -79,29 +85,6 @@ public class OpenWeatherMapServiceTest {
         server.expect(requestTo(url))
                 .andRespond(withStatus(HttpStatus.NOT_FOUND).contentType(MediaType.APPLICATION_JSON_UTF8));
         service.retrieveWeatherForCity("São Paulo", TemperatureUnitsEnum.CELSIUS);
-    }
-
-    @Test(expected = EntityNotFoundException.class)
-    public void testParameterFahrenheitUnit() throws EntityNotFoundException {
-        server.expect(requestTo(getUrl("imperial"))).andRespond(withStatus(HttpStatus.NOT_FOUND));
-        service.retrieveWeatherForCity("São Paulo", TemperatureUnitsEnum.FAHRENHEIT);
-        server.verify();
-    }
-
-    @Test(expected = EntityNotFoundException.class)
-    public void testParameterKelvinUnit() throws EntityNotFoundException {
-        server.expect(requestTo(getUrl(""))).andRespond(withStatus(HttpStatus.NOT_FOUND));
-        service.retrieveWeatherForCity("São Paulo", TemperatureUnitsEnum.KELVIN);
-        server.verify();
-    }
-
-    private String getUrl(String units) {
-        String url = "http://api.openweathermap.org/data/2.5/weather";
-        return UriComponentsBuilder.fromHttpUrl(url)
-                .queryParam("q", "São Paulo")
-                .queryParam("appid", "8199304b927600d08c479986ff37d5b4")
-                .queryParam("lang", "en")
-                .queryParam("units", units).toUriString();
     }
 
 }
