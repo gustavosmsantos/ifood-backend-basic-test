@@ -58,9 +58,11 @@ public class OpenWeatherMapServiceTest {
                 .andRespond(withSuccess().contentType(MediaType.APPLICATION_JSON_UTF8).body(example));
 
         WeatherInfo weatherInfo = service.retrieveWeatherForCity("São Paulo", TemperatureUnitsEnum.CELSIUS);
+        LocalDateTime now = LocalDateTime.now();
 
         assertNotNull(weatherInfo);
-        assertTrue(weatherInfo.getTime().isBefore(LocalDateTime.now()));
+        LocalDateTime weatherTime = weatherInfo.getTime();
+        assertTrue(weatherTime.isEqual(now) || weatherTime.isBefore(now));
         assertThat(weatherInfo.getCity(), is("São Paulo"));
         assertThat(weatherInfo.getCountry(), is("BR"));
 
