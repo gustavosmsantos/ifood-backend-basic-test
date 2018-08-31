@@ -10,6 +10,18 @@ com [Spring Boot][SpringBoot] 1.5.2 (torna o micro-serviço executável, sem nec
 
 Crie um *fork* deste repositório e siga as tarefas abaixo.
 
+## Estratégia de implementação
+
+A escolha das ferramenta foi feita baseada no ecossistema Spring, para implementação das tarefas.
+
+Para o retorno das informações de tempo um contrato foi definido de forma que cada implementação de serviço retorne a mesma informação.
+
+O cache foi implementado utilizando o spring cache na configuração default. Vale ressaltar que essa configuração foi escolhida por
+se tratar apenas de um projeto de teste, para produção o mais adequado seria uma implementação mais robusta, ou um serviço externo.
+
+Como estratégia de fallback, foi adotada a chamada em um segundo serviço (AccuWeather) para o caso de o primeiro não responder dentro 
+de um tempo limite de 5 segundos.
+
 ## Tarefas
 
 ### 1. Crie um endpoint para retornar informações sobre o serviço
