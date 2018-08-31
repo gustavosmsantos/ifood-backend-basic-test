@@ -1,5 +1,6 @@
 package com.ifood.controllers;
 
+import com.ifood.exception.EntityNotFoundException;
 import com.ifood.model.WeatherInfo;
 import com.ifood.enums.temperature.TemperatureUnitsEnum;
 import com.ifood.services.WeatherService;
@@ -19,7 +20,7 @@ public class WeatherController {
     private WeatherService weatherService;
 
     @GetMapping("/weather")
-    public WeatherInfo retrieveWeather(@RequestParam("city") String city, @RequestParam(required = false) TemperatureUnitsEnum units) {
+    public WeatherInfo retrieveWeather(@RequestParam("city") String city, @RequestParam(required = false) TemperatureUnitsEnum units) throws EntityNotFoundException {
         return weatherService.retrieveWeatherForCity(city, Optional.ofNullable(units).orElse(TemperatureUnitsEnum.FAHRENHEIT));
     }
 

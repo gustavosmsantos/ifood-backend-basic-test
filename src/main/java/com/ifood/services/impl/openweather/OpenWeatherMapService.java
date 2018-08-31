@@ -1,6 +1,7 @@
 package com.ifood.services.impl.openweather;
 
 import com.ifood.enums.temperature.TemperatureUnitsEnum;
+import com.ifood.exception.EntityNotFoundException;
 import com.ifood.model.Details;
 import com.ifood.model.WeatherInfo;
 import com.ifood.services.WeatherService;
@@ -10,14 +11,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 
 import static com.ifood.services.impl.openweather.UnitsRetriever.getUnits;
 
@@ -35,10 +37,13 @@ public class OpenWeatherMapService implements WeatherService {
     @Value("${weather.language}")
     private String lang;
 
-    @Autowired
     private RestTemplate restTemplate;
 
-    public WeatherInfo retrieveWeatherForCity(String city, TemperatureUnitsEnum temperatureUnits) {
+    public OpenWeatherMapService(@Autowired RestTemplateBuilder restTemplate) {
+        this.restTemplate = restTemplate.build();
+    }
+
+    public WeatherInfo retrieveWeatherForCity(String city, TemperatureUnitsEnum temperatureUnits) throws EntityNotFoundException {
 
         UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(url)
                 .queryParam("q", city)
@@ -53,12 +58,14 @@ public class OpenWeatherMapService implements WeatherService {
             if (entity.getStatusCode().is2xxSuccessful()) {
                 return this.convert(entity.getBody(), temperatureUnits);
             } else {
-                //TODO: exception
                 throw new RuntimeException();
             }
-        } catch (RestClientException e) {
-            //TODO: exception
-            throw new RuntimeException();
+        } catch (HttpStatusCodeException ex) {
+            HttpStatus statusCode = ex.getStatusCode();
+            if (HttpStatus.NOT_FOUND.equals(statusCode)) {
+                throw new EntityNotFoundException("city", city);
+            }
+            throw ex;
         }
 
     }
@@ -67,7 +74,7 @@ public class OpenWeatherMapService implements WeatherService {
         LOGGER.info("Converting response: {}", response);
 
         WeatherInfo weatherInfo = new WeatherInfo();
-        weatherInfo.setTime(LocalDateTime.ofInstant(response.getDt(), ZoneOffset.UTC));
+        weatherInfo.setTime(LocalDateTime.now());
         weatherInfo.setCity(response.getName());
         weatherInfo.setCountry(response.getSys().getCountry());
 
