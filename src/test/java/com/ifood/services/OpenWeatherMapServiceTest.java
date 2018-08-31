@@ -49,11 +49,14 @@ public class OpenWeatherMapServiceTest {
         this.server = MockRestServiceServer.bindTo(service.getRestTemplate()).build();
     }
 
-    private static final String url = "http://api.openweathermap.org/data/2.5/weather?q=S%C3%A3o%20Paulo&appid=8199304b927600d08c479986ff37d5b4&lang=en&units=metric";
+    @Value("${openweathermap.url}")
+    private String baseUrl;
 
     @Test
     public void testSuccessfullResponseAndParse() throws EntityNotFoundException, IOException {
         String example = new String(Files.readAllBytes(responseExample.getFile().toPath()));
+
+        String url = baseUrl + "?q=S%C3%A3o%20Paulo&appid=8199304b927600d08c479986ff37d5b4&lang=en&units=metric";
         server.expect(requestTo(url))
                 .andRespond(withSuccess().contentType(MediaType.APPLICATION_JSON_UTF8).body(example));
 
@@ -84,6 +87,7 @@ public class OpenWeatherMapServiceTest {
 
     @Test(expected = EntityNotFoundException.class)
     public void testResponseCityNotFound() throws EntityNotFoundException {
+        String url = baseUrl + "?q=S%C3%A3o%20Paulo&appid=8199304b927600d08c479986ff37d5b4&lang=en&units=metric";
         server.expect(requestTo(url))
                 .andRespond(withStatus(HttpStatus.NOT_FOUND).contentType(MediaType.APPLICATION_JSON_UTF8));
         service.retrieveWeatherForCity("São Paulo", TemperatureUnitsEnum.CELSIUS);

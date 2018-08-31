@@ -6,6 +6,7 @@ import com.ifood.services.impl.openweather.OpenWeatherMapUriBuilder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -16,6 +17,9 @@ import static org.junit.Assert.assertThat;
 @RunWith(SpringRunner.class)
 @SpringBootTest
 public class OpenWeatherMapUriBuilderTest {
+
+    @Value("${openweathermap.url}")
+    private String baseUrl;
 
     @Autowired
     private OpenWeatherMapUriBuilder uriBuilder;
@@ -39,8 +43,7 @@ public class OpenWeatherMapUriBuilderTest {
     }
 
     private String getUrl(String units) {
-        String url = "http://api.openweathermap.org/data/2.5/weather";
-        return UriComponentsBuilder.fromHttpUrl(url)
+        return UriComponentsBuilder.fromHttpUrl(baseUrl)
                 .queryParam("q", "São Paulo")
                 .queryParam("appid", "8199304b927600d08c479986ff37d5b4")
                 .queryParam("lang", "en")

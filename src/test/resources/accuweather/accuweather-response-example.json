@@ -1,0 +1,23 @@
+[
+  {
+    "LocalObservationDateTime": "2018-08-31T08:10:00-03:00",
+    "EpochTime": 1535713800,
+    "WeatherText": "Sunny",
+    "WeatherIcon": 1,
+    "IsDayTime": true,
+    "Temperature": {
+      "Metric": {
+        "Value": 17.9,
+        "Unit": "C",
+        "UnitType": 17
+      },
+      "Imperial": {
+        "Value": 64.0,
+        "Unit": "F",
+        "UnitType": 18
+      }
+    },
+    "MobileLink": "http://m.accuweather.com/en/br/sao-paulo/45881/current-weather/45881?lang=en-us",
+    "Link": "http://www.accuweather.com/en/br/sao-paulo/45881/current-weather/45881?lang=en-us"
+  }
+]

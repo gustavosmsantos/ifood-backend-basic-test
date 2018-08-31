@@ -8,6 +8,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -28,6 +29,7 @@ public class WeatherControllerCacheTest {
     private WeatherController controller;
 
     @Autowired
+    @Qualifier("openWeatherMapService")
     private WeatherService weatherService;
 
     @Test

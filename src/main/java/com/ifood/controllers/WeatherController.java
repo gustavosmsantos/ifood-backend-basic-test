@@ -4,6 +4,7 @@ import com.ifood.exception.EntityNotFoundException;
 import com.ifood.model.WeatherInfo;
 import com.ifood.enums.temperature.TemperatureUnitsEnum;
 import com.ifood.services.WeatherService;
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,14 +26,23 @@ public class WeatherController {
 
     private WeatherService weatherService;
 
-    public WeatherController(@Autowired @Qualifier("openWeatherMapService") WeatherService weatherService) {
+    private WeatherService fallbackWeatherService;
+
+    public WeatherController(@Autowired @Qualifier("openWeatherMapService") WeatherService weatherService,
+    @Autowired @Qualifier("fallbackWeatherService") WeatherService fallbackWeatherService) {
         this.weatherService = weatherService;
+        this.fallbackWeatherService = fallbackWeatherService;
     }
 
     @Cacheable(value = "weather", key = "#city + #units")
     @GetMapping("/weather")
+    @HystrixCommand(fallbackMethod = "fallbackWeather")
     public WeatherInfo retrieveWeather(@RequestParam("city") String city, @RequestParam(required = false) TemperatureUnitsEnum units) throws EntityNotFoundException {
         return weatherService.retrieveWeatherForCity(city, Optional.ofNullable(units).orElse(TemperatureUnitsEnum.FAHRENHEIT));
+    }
+
+    public WeatherInfo fallbackWeather(String city, TemperatureUnitsEnum units, Throwable ex) throws EntityNotFoundException {
+        return fallbackWeatherService.retrieveWeatherForCity(city, units);
     }
 
     @CacheEvict(value = "weather")
