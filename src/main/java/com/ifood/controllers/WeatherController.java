@@ -37,7 +37,7 @@ public class WeatherController {
 
     @CacheEvict(value = "weather")
     @Scheduled(fixedRate = 15 * 60 * 1000, initialDelay = 1000)
-    private void evictAllWeatherCache() {
+    public void evictAllWeatherCache() {
         LOGGER.info("Cache evicted at {}", LocalDateTime.now());
     }
 
